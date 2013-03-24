@@ -1,0 +1,105 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+use App::duino;
+
+=head1 NAME
+
+duino - Command-line tool for working with Arduino
+
+=cut
+
+=head1 SYNOPSIS
+
+ duino COMMAND [OPTIONS]
+
+ Examples:
+   $ duino build --board uno
+   $ duino upload --board uno --port /dev/ttyACM0
+   $ duino clean --board uno
+
+=cut
+
+App::duino -> run;
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--board>, B<-b>
+
+The Arduino board model. The environment variable C<ARDUINO_BOARD> will be used
+if present and if the command-line option is not set. If neither of them is set
+the default value (C<uno>) will be used.
+
+=item B<--port>, B<-p>
+
+The path to the Arduino serial port. The environment variable C<ARDUINO_PORT>
+will be used if present and if the command-line option is not set. If neither
+of them is set the default value (C</dev/ttyACM0>) will be used.
+
+=item B<--sketchbook>, B<-s>
+
+The path to the user's sketchbook directory. The environment variable
+C<ARDUINO_SKETCHBOOK> will be used if present and if the command-line option is
+not set. If neither of them is set the default value (C<$HOME/sketchbook>) will
+be used.
+
+=item B<--dir>, B<-d>
+
+The path to the Arduino installation directory. The environment variable
+C<ARDUINO_DIR> will be used if present and if the command-line option is not
+set. If neither of them is set the default value (C</usr/share/arduino>) will
+be used.
+
+=item B<--libs>, B<-l>
+
+List of space-separated, non-core Arduino libraries to build. The environment
+variable C<ARDUINO_LIBS> will be used if present and if the command-line option
+is not set. If neither of them is set no libraries are built.
+
+Example:
+
+    $ duino build --libs "Wire Wire/utility SPI"
+
+=back
+
+=head1 CONFIGURATION
+
+Per-project configurations can be specified in the C<duino.ini> file under the
+project directory. Valid configurations are:
+
+=over 4
+
+=item B<board>
+
+The Arduino board model.
+
+=item B<libs>
+
+A list of non-core libraries needed by the project.
+
+=back
+
+Example:
+
+    board = leonardo
+    libs  = Wire Wire/utility SPI SD SD/utility
+
+=head1 AUTHOR
+
+Alessandro Ghedini <alexbio@cpan.org>
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2013 Alessandro Ghedini.
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See http://dev.perl.org/licenses/ for more information.
+
+=cut
