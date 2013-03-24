@@ -11,7 +11,7 @@ duino - Command-line tool for working with Arduino
 
 =head1 VERSION
 
-version 0.01
+version 0.02
 
 =cut
 
@@ -19,10 +19,21 @@ version 0.01
 
  duino COMMAND [OPTIONS]
 
- Examples:
+=over
+
+=item Build a sketch:
+
    $ duino build --board uno
+
+=item Upload the sketch to the Arduino:
+
    $ duino upload --board uno --port /dev/ttyACM0
+
+=item Clean the build directory:
+
    $ duino clean --board uno
+
+=back
 
 =cut
 

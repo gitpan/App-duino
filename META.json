@@ -58,7 +58,7 @@
          "web" : "https://github.com/ghedo/duino"
       }
    },
-   "version" : 0.01,
+   "version" : "0.02",
    "x_Dist_Zilla" : {
       "perl" : {
          "version" : "5.014002"
@@ -132,12 +132,12 @@
          {
             "class" : "Dist::Zilla::Plugin::GitHub::Meta",
             "name" : "@Author::ALEXBIO/@GitHub/GitHub::Meta",
-            "version" : "0.32"
+            "version" : "0.33"
          },
          {
             "class" : "Dist::Zilla::Plugin::GitHub::Update",
             "name" : "@Author::ALEXBIO/@GitHub/GitHub::Update",
-            "version" : "0.32"
+            "version" : "0.33"
          },
          {
             "class" : "Dist::Zilla::Plugin::Git::NextVersion",
@@ -218,6 +218,11 @@
             "class" : "Dist::Zilla::Plugin::Clean",
             "name" : "@Author::ALEXBIO/Clean",
             "version" : "0.07"
+         },
+         {
+            "class" : "Dist::Zilla::Plugin::PruneFiles",
+            "name" : "PruneFiles",
+            "version" : "4.300031"
          },
          {
             "class" : "Dist::Zilla::Plugin::FinderCode",

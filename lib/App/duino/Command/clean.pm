@@ -1,6 +1,6 @@
 package App::duino::Command::clean;
 {
-  $App::duino::Command::clean::VERSION = '0.01';
+  $App::duino::Command::clean::VERSION = '0.02';
 }
 
 use strict;
@@ -12,11 +12,11 @@ use File::Path qw(remove_tree);
 
 =head1 NAME
 
-App::duino::Command::clean - Clean the build directory for a specific board
+App::duino::Command::clean - Clean the build directory
 
 =head1 VERSION
 
-version 0.01
+version 0.02
 
 =head1 SYNOPSIS
 
@@ -24,7 +24,7 @@ version 0.01
 
 =cut
 
-sub abstract { 'clean the build directory for a specific board' }
+sub abstract { 'clean the build directory' }
 
 sub usage_desc { '%c clean %o' }
 

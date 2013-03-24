@@ -5,7 +5,6 @@ META.json
 META.yml
 Makefile.PL
 README
-README.pod
 TODO
 bin/duino
 dist.ini
