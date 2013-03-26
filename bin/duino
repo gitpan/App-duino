@@ -11,7 +11,7 @@ duino - Command-line tool for working with Arduino
 
 =head1 VERSION
 
-version 0.03
+version 0.04
 
 =cut
 
@@ -20,6 +20,10 @@ version 0.03
  duino COMMAND [OPTIONS]
 
 =over
+
+=item List the supported Arduino models:
+
+   $ duino models
 
 =item Build a sketch:
 
@@ -33,6 +37,10 @@ version 0.03
 
    $ duino build --board uno some_sketch.ino
    $ duino upload --board uno --port /dev/ttyACM0 some_sketch.ino
+
+=item Communicate with the Arduino:
+
+   $ duino com --port /dev/ttyACM0
 
 =item Clean the build directory:
 

@@ -1,37 +1,38 @@
-package App::duino::Command;
+package App::duino::Command::models;
 {
-  $App::duino::Command::VERSION = '0.04';
+  $App::duino::Command::models::VERSION = '0.04';
 }
 
 use strict;
 use warnings;
 
-use App::Cmd::Setup -command;
-
-use File::Basename;
-use Config::INI::Reader;
+use App::duino -command;
 
 =head1 NAME
 
-App::duino::Command - Base class for App::duino commands
+App::duino::Command::models - List all known Arduino models
 
 =head1 VERSION
 
 version 0.04
 
+=head1 SYNOPSIS
+
+  $ duino models
+
 =cut
 
-sub config {
-	my ($self, $opt, $config) = @_;
+sub abstract { 'list all known Arduino models' }
 
-	my $board = $opt -> board;
+sub usage_desc { '%c models' }
+
+sub execute {
+	my ($self, $opt, $args) = @_;
 
 	my $boards = $self -> file($opt, 'hardware/arduino/boards.txt');
 
 	open my $fh, '<', $boards
 		or die "Can't open file 'boards.txt'.\n";
-
-	my $value = undef;
 
 	while (my $line = <$fh>) {
 		chomp $line;
@@ -39,27 +40,16 @@ sub config {
 		my $first = substr $line, 0, 1;
 
 		next if $first eq '#' or $first eq '';
-		next unless $line =~ /^$board\.$config\=/;
+		next unless $line =~ /^(.*)\.name\=/;
 
-		(undef, $value) = split '=', $line;
+		my $board = $1;
+
+		my (undef, $value) = split '=', $line;
+
+		printf "%15s: %s\n", $board, $value;
 	}
 
 	close $fh;
-
-	die "Can't find '$board.$config' config value.\n"
-		if not $value;
-
-	return $value;
-}
-
-sub file {
-	my ($self, $opt, $file) = @_;
-
-	my $path = $opt -> dir . '/' . $file;
-
-	return $path if -e $path;
-
-	die "Can't find file '" . basename($file) . "'.\n";
 }
 
 =head1 AUTHOR
@@ -78,4 +68,4 @@ See http://dev.perl.org/licenses/ for more information.
 
 =cut
 
-1; # End of App::duino::Command
+1; # End of App::duino::Command::models

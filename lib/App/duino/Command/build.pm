@@ -1,6 +1,6 @@
 package App::duino::Command::build;
 {
-  $App::duino::Command::build::VERSION = '0.03';
+  $App::duino::Command::build::VERSION = '0.04';
 }
 
 use strict;
@@ -19,7 +19,7 @@ App::duino::Command::build - Build an Arduino sketch
 
 =head1 VERSION
 
-version 0.03
+version 0.04
 
 =head1 SYNOPSIS
 
@@ -30,6 +30,35 @@ version 0.03
 sub abstract { 'build an Arduino sketch' }
 
 sub usage_desc { '%c build %o [sketch.ino]' }
+
+sub opt_spec {
+	my $arduino_dir         = $ENV{'ARDUINO_DIR'}   || '/usr/share/arduino';
+	my $arduino_board       = $ENV{'ARDUINO_BOARD'} || 'uno';
+	my $arduino_libs        = $ENV{'ARDUINO_LIBS'}  || '';
+	my $arduino_sketchbook  = $ENV{'ARDUINO_SKETCHBOOK'} ||
+						"$ENV{'HOME'}/sketchbook";
+
+	if (-e 'duino.ini') {
+		my $config = Config::INI::Reader -> read_file('duino.ini');
+
+		$arduino_board = $config -> {'_'} -> {'board'}
+			if $config -> {'_'} -> {'board'};
+
+		$arduino_libs = $config -> {'_'} -> {'libs'}
+			if $config -> {'_'} -> {'libs'};
+	}
+
+	return (
+		[ 'board|b=s', 'specify the board model',
+			{ default => $arduino_board } ],
+		[ 'sketchbook|s=s', 'specify the user sketchbook directory',
+			{ default => $arduino_sketchbook } ],
+		[ 'dir|d=s', 'specify the Arduino installation directory',
+			{ default => $arduino_dir } ],
+		[ 'libs|l=s', 'specify the Arduino libraries to build',
+			{ default => $arduino_libs } ],
+	);
+}
 
 sub execute {
 	my ($self, $opt, $args) = @_;
@@ -55,7 +84,7 @@ sub execute {
 		$target = '$(notdir $(basename $(LOCAL_INO_SRCS)))';
 		push @ino_srcs, $args -> [0];
 	} elsif ($args -> [0]) {
-		die "Can't find '" . $args -> [0] . "' file.\n";
+		die "Can't find file '" . $args -> [0] . "'.\n";
 	} else {
 		$target = '$(notdir $(CURDIR))';
 		@ino_srcs = File::Find::Rule -> file

@@ -1,6 +1,6 @@
 package App::duino::Command::upload;
 {
-  $App::duino::Command::upload::VERSION = '0.03';
+  $App::duino::Command::upload::VERSION = '0.04';
 }
 
 use strict;
@@ -18,7 +18,7 @@ App::duino::Command::upload - Upload a sketch to an Arduino
 
 =head1 VERSION
 
-version 0.03
+version 0.04
 
 =head1 SYNOPSIS
 
@@ -29,6 +29,25 @@ version 0.03
 sub abstract { 'upload a sketch to an Arduino' }
 
 sub usage_desc { '%c upload %o [sketch.ino]' }
+
+sub opt_spec {
+	my $arduino_board       = $ENV{'ARDUINO_BOARD'} || 'uno';
+	my $arduino_port        = $ENV{'ARDUINO_PORT'}  || '/dev/ttyACM0';
+
+	if (-e 'duino.ini') {
+		my $config = Config::INI::Reader -> read_file('duino.ini');
+
+		$arduino_board = $config -> {'_'} -> {'board'}
+			if $config -> {'_'} -> {'board'};
+	}
+
+	return (
+		[ 'board|b=s', 'specify the board model',
+			{ default => $arduino_board } ],
+		[ 'port|p=s', 'specify the serial port to use',
+			{ default => $arduino_port } ],
+	);
+}
 
 sub execute {
 	my ($self, $opt, $args) = @_;
@@ -57,11 +76,11 @@ sub execute {
 		'-U', "flash:w:$hex:i"
 	);
 
-	die "Can't find '$hex' file, did you run 'duino build'?\n"
+	die "Can't find file '$hex', did you run 'duino build'?\n"
 		unless -e $hex;
 
 	open my $fh, '<', $opt -> port
-		or die "Can't open serial port.\n";
+		or die "Can't open serial port '" . $opt -> port . "'.\n";
 
 	my $fd = fileno $fh;
 
@@ -77,7 +96,7 @@ sub execute {
 		require Device::SerialPort;
 
 		my $serial = Device::SerialPort -> new($opt -> port)
-			or die "Can't open serial port.\n";
+			or die "Can't open serial port '" . $opt -> port . "'.\n";
 
 		$serial -> pulse_dtr_on(0.1 * 1000.0);
 	}

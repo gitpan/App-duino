@@ -1,6 +1,6 @@
 package App::duino::Command::clean;
 {
-  $App::duino::Command::clean::VERSION = '0.03';
+  $App::duino::Command::clean::VERSION = '0.04';
 }
 
 use strict;
@@ -16,7 +16,7 @@ App::duino::Command::clean - Clean the build directory
 
 =head1 VERSION
 
-version 0.03
+version 0.04
 
 =head1 SYNOPSIS
 
@@ -27,6 +27,22 @@ version 0.03
 sub abstract { 'clean the build directory' }
 
 sub usage_desc { '%c clean %o' }
+
+sub opt_spec {
+	my $arduino_board       = $ENV{'ARDUINO_BOARD'} || 'uno';
+
+	if (-e 'duino.ini') {
+		my $config = Config::INI::Reader -> read_file('duino.ini');
+
+		$arduino_board = $config -> {'_'} -> {'board'}
+			if $config -> {'_'} -> {'board'};
+	}
+
+	return (
+		[ 'board|b=s', 'specify the board model',
+			{ default => $arduino_board } ],
+	);
+}
 
 sub execute {
 	my ($self, $opt, $args) = @_;

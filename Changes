@@ -1,5 +1,10 @@
 Revision history for App-duino
 
+0.04      2013-03-26 14:03:54 Europe/Rome
+
+ - Add 'models' command to list supported Arduino models
+ - Add 'com' command to open a serial terminal to the Arduino (work in progress)
+
 0.03      2013-03-26 11:34:53 Europe/Rome
 
  - Improve documentation (no functional changes)
