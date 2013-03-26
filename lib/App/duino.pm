@@ -1,6 +1,6 @@
 package App::duino;
 {
-  $App::duino::VERSION = '0.04';
+  $App::duino::VERSION = '0.05';
 }
 
 use strict;
@@ -14,11 +14,11 @@ App::duino - Command-line tool for working with Arduino
 
 =head1 VERSION
 
-version 0.04
+version 0.05
 
 =head1 SYNOPSIS
 
-   $ duino build
+   $ duino help
 
 =head1 AUTHOR
 

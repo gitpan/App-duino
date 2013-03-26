@@ -1,6 +1,6 @@
 package App::duino::Command::models;
 {
-  $App::duino::Command::models::VERSION = '0.04';
+  $App::duino::Command::models::VERSION = '0.05';
 }
 
 use strict;
@@ -14,7 +14,7 @@ App::duino::Command::models - List all known Arduino models
 
 =head1 VERSION
 
-version 0.04
+version 0.05
 
 =head1 SYNOPSIS
 
@@ -24,7 +24,16 @@ version 0.04
 
 sub abstract { 'list all known Arduino models' }
 
-sub usage_desc { '%c models' }
+sub usage_desc { '%c models %o' }
+
+sub opt_spec {
+	my $arduino_dir         = $ENV{'ARDUINO_DIR'}   || '/usr/share/arduino';
+
+	return (
+		[ 'dir|d=s', 'specify the Arduino installation directory',
+			{ default => $arduino_dir } ],
+	);
+}
 
 sub execute {
 	my ($self, $opt, $args) = @_;

@@ -1,6 +1,6 @@
 package App::duino::Command;
 {
-  $App::duino::Command::VERSION = '0.04';
+  $App::duino::Command::VERSION = '0.05';
 }
 
 use strict;
@@ -17,7 +17,7 @@ App::duino::Command - Base class for App::duino commands
 
 =head1 VERSION
 
-version 0.04
+version 0.05
 
 =cut
 

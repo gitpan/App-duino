@@ -31,7 +31,7 @@ resources:
   bugtracker: https://github.com/ghedo/duino/issues
   homepage: http://metacpan.org/release/App-duino/
   repository: git://github.com/ghedo/duino.git
-version: 0.04
+version: 0.05
 x_Dist_Zilla:
   perl:
     version: 5.014002

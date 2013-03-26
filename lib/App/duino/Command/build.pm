@@ -1,6 +1,6 @@
 package App::duino::Command::build;
 {
-  $App::duino::Command::build::VERSION = '0.04';
+  $App::duino::Command::build::VERSION = '0.05';
 }
 
 use strict;
@@ -19,7 +19,7 @@ App::duino::Command::build - Build an Arduino sketch
 
 =head1 VERSION
 
-version 0.04
+version 0.05
 
 =head1 SYNOPSIS
 
