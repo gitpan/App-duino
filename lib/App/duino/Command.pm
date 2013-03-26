@@ -1,6 +1,6 @@
 package App::duino::Command;
 {
-  $App::duino::Command::VERSION = '0.02';
+  $App::duino::Command::VERSION = '0.03';
 }
 
 use strict;
@@ -17,7 +17,7 @@ App::duino::Command - Base class for App::duino commands
 
 =head1 VERSION
 
-version 0.02
+version 0.03
 
 =cut
 
@@ -77,6 +77,9 @@ sub config {
 	}
 
 	close $fh;
+
+	die "Can't find '$board.$config' config value.\n"
+		if not $value;
 
 	return $value;
 }

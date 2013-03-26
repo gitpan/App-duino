@@ -31,13 +31,14 @@ my %WriteMakefileArgs = (
     "Cwd" => 0,
     "Device::SerialPort" => 0,
     "File::Basename" => 0,
+    "File::Find::Rule" => 0,
     "File::Path" => 0,
     "POSIX" => 0,
     "Text::Template" => 0,
     "strict" => 0,
     "warnings" => 0
   },
-  "VERSION" => "0.02",
+  "VERSION" => "0.03",
   "test" => {
     "TESTS" => "t/*.t"
   }

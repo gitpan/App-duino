@@ -1,6 +1,6 @@
 package App::duino::Command::build;
 {
-  $App::duino::Command::build::VERSION = '0.02';
+  $App::duino::Command::build::VERSION = '0.03';
 }
 
 use strict;
@@ -10,6 +10,7 @@ use App::duino -command;
 
 use Text::Template;
 use File::Basename;
+use File::Find::Rule;
 use File::Path qw(make_path);
 
 =head1 NAME
@@ -18,7 +19,7 @@ App::duino::Command::build - Build an Arduino sketch
 
 =head1 VERSION
 
-version 0.02
+version 0.03
 
 =head1 SYNOPSIS
 
@@ -28,7 +29,7 @@ version 0.02
 
 sub abstract { 'build an Arduino sketch' }
 
-sub usage_desc { '%c build %o' }
+sub usage_desc { '%c build %o [sketch.ino]' }
 
 sub execute {
 	my ($self, $opt, $args) = @_;
@@ -36,32 +37,52 @@ sub execute {
 	my $board_name    = $opt -> board;
 	my $makefile_name = ".build/$board_name/Makefile";
 
-	unless (-e $makefile_name) {
-		make_path(dirname $makefile_name);
+	make_path(dirname $makefile_name);
 
-		open my $makefile, '>', $makefile_name
-			or die "Can't create Makefile.\n";
+	open my $makefile, '>', $makefile_name
+		or die "Can't create Makefile.\n";
 
-		my $template = Text::Template -> new(
-			TYPE => 'FILEHANDLE', SOURCE => \*DATA
-		);
+	my $template = Text::Template -> new(
+		TYPE => 'FILEHANDLE', SOURCE => \*DATA
+	);
 
-		my $makefile_opts = {
-			board   => $board_name,
-			variant => $self -> config($opt, 'build.variant'),
-			mcu     => $self -> config($opt, 'build.mcu'),
-			f_cpu   => $self -> config($opt, 'build.f_cpu'),
-			vid     => $self -> config($opt, 'build.vid'),
-			pid     => $self -> config($opt, 'build.pid'),
-			arduino_libs => $opt -> libs,
-			arduino_dir => $opt -> dir,
-			arduino_sketchbook => $opt -> sketchbook,
-		};
+	my ($target, @c_srcs, @cpp_srcs, @ino_srcs);
 
-		$template -> fill_in(
-			OUTPUT => $makefile, HASH => $makefile_opts
-		);
+	@c_srcs   = File::Find::Rule -> file -> name('*.c') -> in('./');
+	@cpp_srcs = File::Find::Rule -> file -> name('*.cpp') -> in('./');
+
+	if ($args -> [0] and -e $args -> [0]) {
+		$target = '$(notdir $(basename $(LOCAL_INO_SRCS)))';
+		push @ino_srcs, $args -> [0];
+	} elsif ($args -> [0]) {
+		die "Can't find '" . $args -> [0] . "' file.\n";
+	} else {
+		$target = '$(notdir $(CURDIR))';
+		@ino_srcs = File::Find::Rule -> file
+				-> name('*.ino') -> in('./');
 	}
+
+	my $makefile_opts = {
+		board   => $board_name,
+		variant => $self -> config($opt, 'build.variant'),
+		mcu     => $self -> config($opt, 'build.mcu'),
+		f_cpu   => $self -> config($opt, 'build.f_cpu'),
+		vid     => $self -> config($opt, 'build.vid'),
+		pid     => $self -> config($opt, 'build.pid'),
+
+		target         => $target,
+		local_c_srcs   => join(' ', @c_srcs),
+		local_cpp_srcs => join(' ', @cpp_srcs),
+		local_ino_srcs => join(' ', @ino_srcs),
+
+		arduino_libs       => $opt -> libs,
+		arduino_dir        => $opt -> dir,
+		arduino_sketchbook => $opt -> sketchbook,
+	};
+
+	$template -> fill_in(
+		OUTPUT => $makefile, HASH => $makefile_opts
+	);
 
 	system 'make', '--silent', '-f', $makefile_name;
 }
@@ -124,16 +145,13 @@ AVR_TOOLS_PATH    = $(AVR_TOOLS_DIR)/bin
 
 OBJDIR  = .build/$(BOARD_TAG)
 
-LOCAL_C_SRCS    = $(wildcard *.c)
-LOCAL_CPP_SRCS  = $(wildcard *.cpp)
-LOCAL_CC_SRCS   = $(wildcard *.cc)
-LOCAL_PDE_SRCS  = $(wildcard *.pde)
-LOCAL_INO_SRCS  = $(wildcard *.ino)
-LOCAL_AS_SRCS   = $(wildcard *.S)
-LOCAL_OBJ_FILES = $(LOCAL_C_SRCS:.c=.o)   $(LOCAL_CPP_SRCS:.cpp=.o) \
-		$(LOCAL_CC_SRCS:.cc=.o)   $(LOCAL_PDE_SRCS:.pde=.o) \
-		$(LOCAL_INO_SRCS:.ino=.o) $(LOCAL_AS_SRCS:.S=.o)
-LOCAL_OBJS      = $(patsubst %,$(OBJDIR)/%,$(LOCAL_OBJ_FILES))
+LOCAL_C_SRCS    = {$local_c_srcs}
+LOCAL_CPP_SRCS  = {$local_cpp_srcs}
+LOCAL_INO_SRCS  = {$local_ino_srcs}
+
+LOCAL_OBJ_FILES = $(LOCAL_C_SRCS:.c=.o) $(LOCAL_CPP_SRCS:.cpp=.o) \
+		  $(LOCAL_INO_SRCS:.ino=.o)
+LOCAL_OBJS      = $(addprefix $(OBJDIR)/, $(LOCAL_OBJ_FILES))
 
 # core sources
 CORE_C_SRCS     = $(wildcard $(ARDUINO_CORE_PATH)/*.c)
@@ -151,7 +169,7 @@ CORE_OBJS       = $(patsubst $(ARDUINO_CORE_PATH)/%,  \
 # Rules for making stuff
 #
 
-TARGET     = $(notdir $(CURDIR))
+TARGET     = {$target}
 
 # The name of the main targets
 TARGET_HEX = $(OBJDIR)/$(TARGET).hex
@@ -163,24 +181,25 @@ CORE_LIB   = $(OBJDIR)/libcore.a
 CC      = $(AVR_TOOLS_PATH)/avr-gcc
 CXX     = $(AVR_TOOLS_PATH)/avr-g++
 OBJCOPY = $(AVR_TOOLS_PATH)/avr-objcopy
-OBJDUMP = $(AVR_TOOLS_PATH)/avr-objdump
 AR      = $(AVR_TOOLS_PATH)/avr-ar
-SIZE    = $(AVR_TOOLS_PATH)/avr-size
-NM      = $(AVR_TOOLS_PATH)/avr-nm
-MV      = mv -f
 CAT     = cat
 ECHO    = echo
+MKDIR   = mkdir -p
 
 # General arguments
 SYS_LIBS      = $(patsubst %,$(ARDUINO_LIB_PATH)/%,$(ARDUINO_LIBS))
 USER_LIBS     = $(patsubst %,$(USER_LIB_PATH)/%,$(ARDUINO_LIBS))
+
 SYS_INCLUDES  = $(patsubst %,-I%,$(SYS_LIBS))
 USER_INCLUDES = $(patsubst %,-I%,$(USER_LIBS))
+
 LIB_C_SRCS    = $(wildcard $(patsubst %,%/*.c,$(SYS_LIBS)))
 LIB_CPP_SRCS  = $(wildcard $(patsubst %,%/*.cpp,$(SYS_LIBS)))
-USER_LIB_CPP_SRCS   = $(wildcard $(patsubst %,%/*.cpp,$(USER_LIBS)))
-USER_LIB_C_SRCS     = $(wildcard $(patsubst %,%/*.c,$(USER_LIBS)))
-LIB_OBJS      = $(patsubst $(ARDUINO_LIB_PATH)/%.c,$(OBJDIR)/%.o,$(LIB_C_SRCS)) \
+
+USER_LIB_CPP_SRCS = $(wildcard $(patsubst %,%/*.cpp,$(USER_LIBS)))
+USER_LIB_C_SRCS   = $(wildcard $(patsubst %,%/*.c,$(USER_LIBS)))
+
+LIB_OBJS      = $(patsubst $(ARDUINO_LIB_PATH)/%.c,$(OBJDIR)/%.o,$(LIB_C_SRCS))\
 		$(patsubst $(ARDUINO_LIB_PATH)/%.cpp,$(OBJDIR)/%.o,$(LIB_CPP_SRCS))
 USER_LIB_OBJS = $(patsubst $(USER_LIB_PATH)/%.cpp,$(OBJDIR)/%.o,$(USER_LIB_CPP_SRCS)) \
 		$(patsubst $(USER_LIB_PATH)/%.c,$(OBJDIR)/%.o,$(USER_LIB_C_SRCS))
@@ -199,22 +218,22 @@ LDFLAGS       = -mmcu=$(MCU) -Wl,--gc-sections -Os
 # library sources
 $(OBJDIR)/%.o: $(ARDUINO_LIB_PATH)/%.c
 	$(ECHO) 'Building $(shell basename $<)'
-	mkdir -p $(dir $@)
+	$(MKDIR) $(dir $@)
 	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
 
 $(OBJDIR)/%.o: $(ARDUINO_LIB_PATH)/%.cpp
 	$(ECHO) 'Building $(shell basename $<)'
-	mkdir -p $(dir $@)
+	$(MKDIR) $(dir $@)
 	$(CC) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 
 $(OBJDIR)/%.o: $(USER_LIB_PATH)/%.cpp
 	$(ECHO) 'Building $(shell basename $<)'
-	mkdir -p $(dir $@)
+	$(MKDIR) $(dir $@)
 	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
 
 $(OBJDIR)/%.o: $(USER_LIB_PATH)/%.c
 	$(ECHO) 'Building $(shell basename $<)'
-	mkdir -p $(dir $@)
+	$(MKDIR) $(dir $@)
 	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
 
 # normal local sources
@@ -224,23 +243,14 @@ $(OBJDIR)/%.o: %.c
 	$(ECHO) 'Building $(shell basename $<)'
 	$(CC) -c $(CPPFLAGS) $(CFLAGS) $< -o $@
 
-$(OBJDIR)/%.o: %.cc
-	$(ECHO) 'Building $(shell basename $<)'
-	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
-
 $(OBJDIR)/%.o: %.cpp
 	$(ECHO) 'Building $(shell basename $<)'
 	$(CXX) -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 
-# the pde -> cpp -> o file
-$(OBJDIR)/%.cpp: %.pde
-	$(ECHO) 'Building $(shell basename $<)'
-	$(ECHO) '#include "WProgram.h"' > $@
-	$(CAT)  $< >> $@
-
 # the ino -> cpp -> o file
 $(OBJDIR)/%.cpp: %.ino
 	$(ECHO) 'Building $(shell basename $<)'
+	$(MKDIR) $(dir $@)
 	$(ECHO) '#include <Arduino.h>' > $@
 	$(CAT)  $< >> $@
 
@@ -264,7 +274,7 @@ $(OBJDIR)/%.hex: $(OBJDIR)/%.elf
 all: 		$(OBJDIR) $(TARGET_HEX)
 
 $(OBJDIR):
-		mkdir $(OBJDIR)
+		$(MKDIR) $(OBJDIR)
 
 $(TARGET_ELF): 	$(LOCAL_OBJS) $(CORE_LIB) $(OTHER_OBJS)
 		$(CC) $(LDFLAGS) -o $@ $(LOCAL_OBJS) $(CORE_LIB) $(OTHER_OBJS) -lc -lm
