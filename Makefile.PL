@@ -9,7 +9,7 @@ use ExtUtils::MakeMaker 6.30;
 
 
 my %WriteMakefileArgs = (
-  "ABSTRACT" => "Command-line tool for working with Arduino",
+  "ABSTRACT" => "Command-line toolkit for working with Arduino boards",
   "AUTHOR" => "Alessandro Ghedini <alexbio\@cpan.org>",
   "BUILD_REQUIRES" => {
     "File::Find" => 0,
@@ -33,12 +33,13 @@ my %WriteMakefileArgs = (
     "File::Basename" => 0,
     "File::Find::Rule" => 0,
     "File::Path" => 0,
+    "IPC::Cmd" => 0,
     "POSIX" => 0,
     "Text::Template" => 0,
     "strict" => 0,
     "warnings" => 0
   },
-  "VERSION" => "0.05",
+  "VERSION" => "0.06",
   "test" => {
     "TESTS" => "t/*.t"
   }

@@ -1,6 +1,6 @@
 package App::duino::Command::clean;
 {
-  $App::duino::Command::clean::VERSION = '0.05';
+  $App::duino::Command::clean::VERSION = '0.06';
 }
 
 use strict;
@@ -16,7 +16,7 @@ App::duino::Command::clean - Clean the build directory
 
 =head1 VERSION
 
-version 0.05
+version 0.06
 
 =head1 SYNOPSIS
 

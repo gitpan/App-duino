@@ -1,6 +1,6 @@
 package App::duino::Command::com;
 {
-  $App::duino::Command::com::VERSION = '0.05';
+  $App::duino::Command::com::VERSION = '0.06';
 }
 
 use strict;
@@ -16,7 +16,7 @@ App::duino::Command::com - Open a serial monitor to an Arduino
 
 =head1 VERSION
 
-version 0.05
+version 0.06
 
 =head1 SYNOPSIS
 

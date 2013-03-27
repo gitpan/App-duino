@@ -1,9 +1,9 @@
 
 
 This archive contains the distribution App-duino,
-version 0.05:
+version 0.06:
 
-  Command-line tool for working with Arduino
+  Command-line toolkit for working with Arduino boards
 
 This software is copyright (c) 2013 by Alessandro Ghedini.
 

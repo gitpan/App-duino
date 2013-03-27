@@ -1,5 +1,5 @@
 {
-   "abstract" : "Command-line tool for working with Arduino",
+   "abstract" : "Command-line toolkit for working with Arduino boards",
    "author" : [
       "Alessandro Ghedini <alexbio@cpan.org>"
    ],
@@ -33,6 +33,7 @@
             "File::Basename" : "0",
             "File::Find::Rule" : "0",
             "File::Path" : "0",
+            "IPC::Cmd" : "0",
             "POSIX" : "0",
             "Text::Template" : "0",
             "strict" : "0",
@@ -59,7 +60,7 @@
          "web" : "https://github.com/ghedo/duino"
       }
    },
-   "version" : "0.05",
+   "version" : "0.06",
    "x_Dist_Zilla" : {
       "perl" : {
          "version" : "5.014002"
