@@ -1,6 +1,6 @@
 package App::duino::Command::upload;
 {
-  $App::duino::Command::upload::VERSION = '0.06';
+  $App::duino::Command::upload::VERSION = '0.07';
 }
 
 use strict;
@@ -18,7 +18,7 @@ App::duino::Command::upload - Upload a sketch to an Arduino
 
 =head1 VERSION
 
-version 0.06
+version 0.07
 
 =head1 SYNOPSIS
 
@@ -69,6 +69,8 @@ sub execute {
 
 	my $avrdude      = $self -> file($opt, 'hardware/tools/avrdude');
 	my $avrdude_conf = $self -> file($opt, 'hardware/tools/avrdude.conf');
+
+	print "Uploading to '" . $self -> config($opt, 'name') . "'...\n";
 
 	my @avrdude_opts = (
 		'-p', $mcu,

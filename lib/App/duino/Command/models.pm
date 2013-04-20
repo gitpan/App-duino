@@ -1,6 +1,6 @@
 package App::duino::Command::models;
 {
-  $App::duino::Command::models::VERSION = '0.06';
+  $App::duino::Command::models::VERSION = '0.07';
 }
 
 use strict;
@@ -14,7 +14,7 @@ App::duino::Command::models - List all known Arduino models
 
 =head1 VERSION
 
-version 0.06
+version 0.07
 
 =head1 SYNOPSIS
 
@@ -43,6 +43,8 @@ sub execute {
 	open my $fh, '<', $boards
 		or die "Can't open file 'boards.txt'.\n";
 
+	print "Supported models:\n\n";
+
 	while (my $line = <$fh>) {
 		chomp $line;
 
@@ -55,7 +57,7 @@ sub execute {
 
 		my (undef, $value) = split '=', $line;
 
-		printf "%15s: %s\n", $board, $value;
+		printf "%10s: %s\n", $board, $value;
 	}
 
 	close $fh;

@@ -1,6 +1,6 @@
 package App::duino::Command::com;
 {
-  $App::duino::Command::com::VERSION = '0.06';
+  $App::duino::Command::com::VERSION = '0.07';
 }
 
 use strict;
@@ -16,7 +16,7 @@ App::duino::Command::com - Open a serial monitor to an Arduino
 
 =head1 VERSION
 
-version 0.06
+version 0.07
 
 =head1 SYNOPSIS
 
@@ -44,9 +44,6 @@ sub execute {
 		or die "Can't open serial port '" . $opt -> port . "'.\n";
 
 	my $fd = fileno $fh;
-
-	my $term = POSIX::Termios -> new;
-	$term -> getattr($fd);
 
 	while (read $fh, my $char, 1) {
 		print $char;
