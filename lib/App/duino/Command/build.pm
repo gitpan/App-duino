@@ -1,6 +1,6 @@
 package App::duino::Command::build;
 {
-  $App::duino::Command::build::VERSION = '0.07';
+  $App::duino::Command::build::VERSION = '0.08';
 }
 
 use strict;
@@ -20,7 +20,7 @@ App::duino::Command::build - Build an Arduino sketch
 
 =head1 VERSION
 
-version 0.07
+version 0.08
 
 =head1 SYNOPSIS
 
@@ -33,31 +33,23 @@ sub abstract { 'build an Arduino sketch' }
 sub usage_desc { '%c build %o [sketch.ino]' }
 
 sub opt_spec {
-	my $arduino_dir         = $ENV{'ARDUINO_DIR'}   || '/usr/share/arduino';
-	my $arduino_board       = $ENV{'ARDUINO_BOARD'} || 'uno';
-	my $arduino_libs        = $ENV{'ARDUINO_LIBS'}  || '';
-	my $arduino_sketchbook  = $ENV{'ARDUINO_SKETCHBOOK'} ||
-						"$ENV{'HOME'}/sketchbook";
-
-	if (-e 'duino.ini') {
-		my $config = Config::INI::Reader -> read_file('duino.ini');
-
-		$arduino_board = $config -> {'_'} -> {'board'}
-			if $config -> {'_'} -> {'board'};
-
-		$arduino_libs = $config -> {'_'} -> {'libs'}
-			if $config -> {'_'} -> {'libs'};
-	}
+	my ($self) = @_;
 
 	return (
 		[ 'board|b=s', 'specify the board model',
-			{ default => $arduino_board } ],
+			{ default => $self -> default_config('board') } ],
+
 		[ 'sketchbook|s=s', 'specify the user sketchbook directory',
-			{ default => $arduino_sketchbook } ],
-		[ 'dir|d=s', 'specify the Arduino installation directory',
-			{ default => $arduino_dir } ],
+			{ default => $self -> default_config('sketchbook') } ],
+
+		[ 'root|d=s', 'specify the Arduino installation directory',
+			{ default => $self -> default_config('root') } ],
+
 		[ 'libs|l=s', 'specify the Arduino libraries to build',
-			{ default => $arduino_libs } ],
+			{ default => $self -> default_config('libs') } ],
+
+		[ 'hardware|r=s', 'specify the hardware type to build for',
+			{ default => $self -> default_config('hardware') } ],
 	);
 }
 
@@ -96,20 +88,22 @@ sub execute {
 
 	my $makefile_opts = {
 		board   => $board_name,
-		variant => $self -> config($opt, 'build.variant'),
-		mcu     => $self -> config($opt, 'build.mcu'),
-		f_cpu   => $self -> config($opt, 'build.f_cpu'),
-		vid     => $self -> config($opt, 'build.vid'),
-		pid     => $self -> config($opt, 'build.pid'),
+		variant => $self -> board_config($opt, 'build.variant'),
+		mcu     => $self -> board_config($opt, 'build.mcu'),
+		f_cpu   => $self -> board_config($opt, 'build.f_cpu'),
+		vid     => $self -> board_config($opt, 'build.vid'),
+		pid     => $self -> board_config($opt, 'build.pid'),
+		core    => $self -> board_config($opt, 'build.core'),
 
 		target         => $target,
 		local_c_srcs   => join(' ', @c_srcs),
 		local_cpp_srcs => join(' ', @cpp_srcs),
 		local_ino_srcs => join(' ', @ino_srcs),
 
-		arduino_libs       => $opt -> libs,
-		arduino_dir        => $opt -> dir,
-		arduino_sketchbook => $opt -> sketchbook,
+		libs       => $opt -> libs,
+		root       => $opt -> root,
+		sketchbook => $opt -> sketchbook,
+		hardware   => $opt -> hardware,
 	};
 
 	$template -> fill_in(
@@ -161,19 +155,18 @@ F_CPU     = {$f_cpu}
 USB_VID   = {$vid}
 USB_PID   = {$pid}
 
-ARDUINO_DIR        = {$arduino_dir}
-ARDUINO_LIBS       = {$arduino_libs}
+ARDUINO_ROOT       = {$root}
+ARDUINO_LIBS       = {$libs}
 ARDUINO_VERSION    = 100
-ARDUINO_SKETCHBOOK = {$arduino_sketchbook}
+ARDUINO_SKETCHBOOK = {$sketchbook}
 
-ARDUINO_LIB_PATH  = $(ARDUINO_DIR)/libraries
-ARDUINO_CORE_PATH = $(ARDUINO_DIR)/hardware/arduino/cores/arduino
-ARDUINO_VAR_PATH  = $(ARDUINO_DIR)/hardware/arduino/variants
+ARDUINO_LIB_PATH  = $(ARDUINO_ROOT)/libraries
+ARDUINO_CORE_PATH = $(ARDUINO_ROOT)/hardware/{$hardware}/cores/{$core}
+ARDUINO_VAR_PATH  = $(ARDUINO_ROOT)/hardware/{$hardware}/variants
 
 USER_LIB_PATH = $(ARDUINO_SKETCHBOOK)/libraries
 
-AVR_TOOLS_DIR     = $(ARDUINO_DIR)/hardware/tools/avr
-AVRDUDE_CONF      = $(AVR_TOOLS_DIR)/etc/avrdude.conf
+AVR_TOOLS_DIR     = $(ARDUINO_ROOT)/hardware/tools/avr
 AVR_TOOLS_PATH    = $(AVR_TOOLS_DIR)/bin
 
 OBJDIR  = .build/$(BOARD_TAG)

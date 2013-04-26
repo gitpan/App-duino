@@ -1,6 +1,6 @@
 package App::duino::Command::upload;
 {
-  $App::duino::Command::upload::VERSION = '0.07';
+  $App::duino::Command::upload::VERSION = '0.08';
 }
 
 use strict;
@@ -18,7 +18,7 @@ App::duino::Command::upload - Upload a sketch to an Arduino
 
 =head1 VERSION
 
-version 0.07
+version 0.08
 
 =head1 SYNOPSIS
 
@@ -31,24 +31,23 @@ sub abstract { 'upload a sketch to an Arduino' }
 sub usage_desc { '%c upload %o [sketch.ino]' }
 
 sub opt_spec {
-	my $arduino_dir         = $ENV{'ARDUINO_DIR'}   || '/usr/share/arduino';
-	my $arduino_board       = $ENV{'ARDUINO_BOARD'} || 'uno';
-	my $arduino_port        = $ENV{'ARDUINO_PORT'}  || '/dev/ttyACM0';
-
-	if (-e 'duino.ini') {
-		my $config = Config::INI::Reader -> read_file('duino.ini');
-
-		$arduino_board = $config -> {'_'} -> {'board'}
-			if $config -> {'_'} -> {'board'};
-	}
+	my ($self) = @_;
 
 	return (
 		[ 'board|b=s', 'specify the board model',
-			{ default => $arduino_board } ],
-		[ 'dir|d=s', 'specify the Arduino installation directory',
-			{ default => $arduino_dir } ],
+			{ default => $self -> default_config('board') } ],
+
+		[ 'sketchbook|s=s', 'specify the user sketchbook directory',
+			{ default => $self -> default_config('sketchbook') } ],
+
+		[ 'root|d=s', 'specify the Arduino installation directory',
+			{ default => $self -> default_config('root') } ],
+
 		[ 'port|p=s', 'specify the serial port to use',
-			{ default => $arduino_port } ],
+			{ default => $self -> default_config('port') } ],
+
+		[ 'hardware|r=s', 'specify the hardware type to build for',
+			{ default => $self -> default_config('hardware') } ],
 	);
 }
 
@@ -63,14 +62,17 @@ sub execute {
 		if $args -> [0] and -e $args -> [0];
 
 	my $hex  = ".build/$board/$name.hex";
-	my $mcu  = $self -> config($opt, 'build.mcu');
-	my $prog = $self -> config($opt, 'upload.protocol');
-	my $baud = $self -> config($opt, 'upload.speed');
+
+	$hex = $args -> [0] if $args -> [0] and $args -> [0] =~ /\.hex$/;
+
+	my $mcu  = $self -> board_config($opt, 'build.mcu');
+	my $prog = $self -> board_config($opt, 'upload.protocol');
+	my $baud = $self -> board_config($opt, 'upload.speed');
 
 	my $avrdude      = $self -> file($opt, 'hardware/tools/avrdude');
 	my $avrdude_conf = $self -> file($opt, 'hardware/tools/avrdude.conf');
 
-	print "Uploading to '" . $self -> config($opt, 'name') . "'...\n";
+	print "Uploading to '" . $self -> board_config($opt, 'name') . "'...\n";
 
 	my @avrdude_opts = (
 		'-p', $mcu,
@@ -92,7 +94,7 @@ sub execute {
 	my $term = POSIX::Termios -> new;
 	$term -> getattr($fd);
 
-	if ($self -> config($opt, 'bootloader.path') eq 'caterina') {
+	if ($self -> board_config($opt, 'bootloader.path') eq 'caterina') {
 		$term -> setispeed(&POSIX::B1200);
 		$term -> setospeed(&POSIX::B1200);
 

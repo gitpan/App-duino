@@ -11,7 +11,7 @@ duino - Command-line toolkit for working with Arduino boards
 
 =head1 VERSION
 
-version 0.07
+version 0.08
 
 =cut
 
@@ -37,6 +37,10 @@ version 0.07
 
    $ duino build --board uno some_sketch.ino
    $ duino upload --board uno --port /dev/ttyACM0 some_sketch.ino
+
+=item Upload a previously built hex file:
+
+   $ duino upload --board uno some_file.hex
 
 =item Communicate with the Arduino:
 
@@ -87,7 +91,7 @@ C<ARDUINO_SKETCHBOOK> will be used if present and if the command-line option is
 not set. If neither of them is set the default value (C<$HOME/sketchbook>) will
 be used.
 
-=item B<--dir>, B<-d>
+=item B<--root>, B<-d>
 
 The path to the Arduino installation directory. The environment variable
 C<ARDUINO_DIR> will be used if present and if the command-line option is not
@@ -103,6 +107,15 @@ is not set. If neither of them is set no libraries are built.
 Example:
 
     $ duino build --libs "Wire Wire/utility SPI"
+
+=item B<--hardware>, B<-r>
+
+The "type" of hardware to target. The environment variable C<ARDUINO_HARDWARE>
+will be used if present and if the command-line option is not set. If neither
+of them is set the default value (C<arduino>) will be used.
+
+This option is only useful when using MCUs not officially supported by the
+Arduino platform (e.g. L<ATTiny|https://code.google.com/p/arduino-tiny/>).
 
 =back
 

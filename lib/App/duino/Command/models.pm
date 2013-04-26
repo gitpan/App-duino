@@ -1,6 +1,6 @@
 package App::duino::Command::models;
 {
-  $App::duino::Command::models::VERSION = '0.07';
+  $App::duino::Command::models::VERSION = '0.08';
 }
 
 use strict;
@@ -14,7 +14,7 @@ App::duino::Command::models - List all known Arduino models
 
 =head1 VERSION
 
-version 0.07
+version 0.08
 
 =head1 SYNOPSIS
 
@@ -27,18 +27,25 @@ sub abstract { 'list all known Arduino models' }
 sub usage_desc { '%c models %o' }
 
 sub opt_spec {
-	my $arduino_dir         = $ENV{'ARDUINO_DIR'}   || '/usr/share/arduino';
+	my ($self) = @_;
 
 	return (
-		[ 'dir|d=s', 'specify the Arduino installation directory',
-			{ default => $arduino_dir } ],
+		[ 'sketchbook|s=s', 'specify the user sketchbook directory',
+			{ default => $self -> default_config('sketchbook') } ],
+
+		[ 'root|d=s', 'specify the Arduino installation directory',
+			{ default => $self -> default_config('root') } ],
+
+		[ 'hardware|r=s', 'specify the hardware type to build for',
+			{ default => $self -> default_config('hardware') } ],
 	);
 }
 
 sub execute {
 	my ($self, $opt, $args) = @_;
 
-	my $boards = $self -> file($opt, 'hardware/arduino/boards.txt');
+	my $boards = $self -> file($opt, 'hardware/' .
+			$opt -> hardware . '/boards.txt');
 
 	open my $fh, '<', $boards
 		or die "Can't open file 'boards.txt'.\n";

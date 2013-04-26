@@ -1,6 +1,6 @@
 package App::duino::Command::com;
 {
-  $App::duino::Command::com::VERSION = '0.07';
+  $App::duino::Command::com::VERSION = '0.08';
 }
 
 use strict;
@@ -16,7 +16,7 @@ App::duino::Command::com - Open a serial monitor to an Arduino
 
 =head1 VERSION
 
-version 0.07
+version 0.08
 
 =head1 SYNOPSIS
 
@@ -29,11 +29,11 @@ sub abstract { 'open a serial monitor to an Arduino' }
 sub usage_desc { '%c upload %o [sketch.ino]' }
 
 sub opt_spec {
-	my $arduino_port        = $ENV{'ARDUINO_PORT'}  || '/dev/ttyACM0';
+	my ($self) = @_;
 
 	return (
 		[ 'port|p=s', 'specify the serial port to use',
-			{ default => $arduino_port } ],
+			{ default => $self -> default_config('port') } ],
 	);
 }
 

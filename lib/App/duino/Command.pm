@@ -1,6 +1,6 @@
 package App::duino::Command;
 {
-  $App::duino::Command::VERSION = '0.07';
+  $App::duino::Command::VERSION = '0.08';
 }
 
 use strict;
@@ -17,16 +17,50 @@ App::duino::Command - Base class for App::duino commands
 
 =head1 VERSION
 
-version 0.07
+version 0.08
 
 =cut
 
-sub config {
+sub ini {
+	my ($self, $config) = @_;
+
+	if (-e 'duino.ini') {
+		my $cfg = Config::INI::Reader -> read_file('duino.ini');
+		return $cfg -> {'_'} -> {$config};
+	}
+
+	return undef;
+}
+
+sub default_config {
+	my ($self, $config) = @_;
+
+	return $ENV{'ARDUINO_ROOT'}   || '/usr/share/arduino'
+		if $config eq 'root';
+
+	return $self -> ini($config) || $ENV{'ARDUINO_BOARD'} || 'uno'
+		if $config eq 'board';
+
+	return $self -> ini($config) || $ENV{'ARDUINO_HARDWARE'} || 'arduino'
+		if $config eq 'hardware';
+
+	return $self -> ini($config) || $ENV{'ARDUINO_LIBS'}  || ''
+		if $config eq 'libs';
+
+	return $ENV{'ARDUINO_SKETCHBOOK'} || "$ENV{'HOME'}/sketchbook"
+		if $config eq 'sketchbook';
+
+	return $ENV{'ARDUINO_PORT'}  || '/dev/ttyACM0'
+		if $config eq 'port';
+}
+
+sub board_config {
 	my ($self, $opt, $config) = @_;
 
 	my $board = $opt -> board;
 
-	my $boards = $self -> file($opt, 'hardware/arduino/boards.txt');
+	my $boards = $self -> file($opt, 'hardware/' .
+			$opt -> hardware . '/boards.txt');
 
 	open my $fh, '<', $boards
 		or die "Can't open file 'boards.txt'.\n";
@@ -46,7 +80,7 @@ sub config {
 
 	close $fh;
 
-	die "Can't find '$board.$config' config value.\n"
+	warn "Can't find '$board.$config' config value.\n"
 		if not $value;
 
 	return $value;
@@ -55,8 +89,7 @@ sub config {
 sub file {
 	my ($self, $opt, $file) = @_;
 
-	my $path = $opt -> dir . '/' . $file;
-
+	my $path = $opt -> root . '/' . $file;
 	return $path if -e $path;
 
 	die "Can't find file '" . basename($file) . "'.\n";
