@@ -1,6 +1,6 @@
 package App::duino::Command::build;
 {
-  $App::duino::Command::build::VERSION = '0.08';
+  $App::duino::Command::build::VERSION = '0.09'; # TRIAL
 }
 
 use strict;
@@ -20,11 +20,22 @@ App::duino::Command::build - Build an Arduino sketch
 
 =head1 VERSION
 
-version 0.08
+version 0.09
 
 =head1 SYNOPSIS
 
-  $ duino build --board uno
+   # this will find all *.ino, *.c and *.cpp files
+   $ duino build --board uno 
+
+   # explicitly provide the sketch file
+   $ duino build --board uno some_sketch.ino
+
+=head1 DESCRIPTION
+
+This command can be used to build a sketch for a specific Arduino board. The
+sketch file is automatically detected in the current working directory. If this
+doesn't work, the path of the sketch file can be explicitly provided on the
+command-line.
 
 =cut
 
@@ -39,14 +50,14 @@ sub opt_spec {
 		[ 'board|b=s', 'specify the board model',
 			{ default => $self -> default_config('board') } ],
 
+		[ 'libs|l=s', 'specify the Arduino libraries to build',
+			{ default => $self -> default_config('libs') } ],
+
 		[ 'sketchbook|s=s', 'specify the user sketchbook directory',
 			{ default => $self -> default_config('sketchbook') } ],
 
 		[ 'root|d=s', 'specify the Arduino installation directory',
 			{ default => $self -> default_config('root') } ],
-
-		[ 'libs|l=s', 'specify the Arduino libraries to build',
-			{ default => $self -> default_config('libs') } ],
 
 		[ 'hardware|r=s', 'specify the hardware type to build for',
 			{ default => $self -> default_config('hardware') } ],
@@ -86,6 +97,16 @@ sub execute {
 				-> name('*.ino') -> in('./');
 	}
 
+	my $core = $self -> board_config($opt, 'build.core');
+	my $hardware = $opt -> hardware;
+
+	my $core_path = "$hardware/cores/$core";
+
+	if ($core =~ /:/) {
+		my ($core1, $core2) = split /:/, $core;
+		$core_path = "$core1/cores/$core2";
+	}
+
 	my $makefile_opts = {
 		board   => $board_name,
 		variant => $self -> board_config($opt, 'build.variant'),
@@ -93,7 +114,7 @@ sub execute {
 		f_cpu   => $self -> board_config($opt, 'build.f_cpu'),
 		vid     => $self -> board_config($opt, 'build.vid'),
 		pid     => $self -> board_config($opt, 'build.pid'),
-		core    => $self -> board_config($opt, 'build.core'),
+		core_pth=> $core_path,
 
 		target         => $target,
 		local_c_srcs   => join(' ', @c_srcs),
@@ -103,7 +124,7 @@ sub execute {
 		libs       => $opt -> libs,
 		root       => $opt -> root,
 		sketchbook => $opt -> sketchbook,
-		hardware   => $opt -> hardware,
+		hardware   => $hardware,
 	};
 
 	$template -> fill_in(
@@ -113,6 +134,51 @@ sub execute {
 	system 'make', '--silent', '-f', $makefile_name;
 	die "Failed to build.\n" unless $? == 0;
 }
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--board>, B<-b>
+
+The Arduino board model. The environment variable C<ARDUINO_BOARD> will be used
+if present and if the command-line option is not set. If neither of them is set
+the default value (C<uno>) will be used.
+
+=item B<--libs>, B<-l>
+
+List of space-separated, non-core Arduino libraries to build. The environment
+variable C<ARDUINO_LIBS> will be used if present and if the command-line option
+is not set. If neither of them is set no libraries are built.
+
+Example:
+
+    $ duino build --libs "Wire Wire/utility SPI"
+
+=item B<--sketchbook>, B<-s>
+
+The path to the user's sketchbook directory. The environment variable
+C<ARDUINO_SKETCHBOOK> will be used if present and if the command-line option is
+not set. If neither of them is set the default value (C<$HOME/sketchbook>) will
+be used.
+
+=item B<--root>, B<-d>
+
+The path to the Arduino installation directory. The environment variable
+C<ARDUINO_DIR> will be used if present and if the command-line option is not
+set. If neither of them is set the default value (C</usr/share/arduino>) will
+be used.
+
+=item B<--hardware>, B<-r>
+
+The "type" of hardware to target. The environment variable C<ARDUINO_HARDWARE>
+will be used if present and if the command-line option is not set. If neither
+of them is set the default value (C<arduino>) will be used.
+
+This option is only useful when using MCUs not officially supported by the
+Arduino platform (e.g. L<ATTiny|https://code.google.com/p/arduino-tiny/>).
+
+=back
 
 =head1 AUTHOR
 
@@ -161,7 +227,7 @@ ARDUINO_VERSION    = 100
 ARDUINO_SKETCHBOOK = {$sketchbook}
 
 ARDUINO_LIB_PATH  = $(ARDUINO_ROOT)/libraries
-ARDUINO_CORE_PATH = $(ARDUINO_ROOT)/hardware/{$hardware}/cores/{$core}
+ARDUINO_CORE_PATH = $(ARDUINO_ROOT)/hardware/{$core_pth}
 ARDUINO_VAR_PATH  = $(ARDUINO_ROOT)/hardware/{$hardware}/variants
 
 USER_LIB_PATH = $(ARDUINO_SKETCHBOOK)/libraries

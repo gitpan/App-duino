@@ -48,7 +48,7 @@
          }
       }
    },
-   "release_status" : "stable",
+   "release_status" : "testing",
    "resources" : {
       "bugtracker" : {
          "web" : "https://github.com/ghedo/duino/issues"
@@ -60,7 +60,7 @@
          "web" : "https://github.com/ghedo/duino"
       }
    },
-   "version" : "0.08",
+   "version" : "0.09",
    "x_Dist_Zilla" : {
       "perl" : {
          "version" : "5.014002"
@@ -134,12 +134,12 @@
          {
             "class" : "Dist::Zilla::Plugin::GitHub::Meta",
             "name" : "@Author::ALEXBIO/@GitHub/GitHub::Meta",
-            "version" : "0.32"
+            "version" : "0.35"
          },
          {
             "class" : "Dist::Zilla::Plugin::GitHub::Update",
             "name" : "@Author::ALEXBIO/@GitHub/GitHub::Update",
-            "version" : "0.32"
+            "version" : "0.35"
          },
          {
             "class" : "Dist::Zilla::Plugin::Git::NextVersion",
@@ -260,7 +260,7 @@
       "zilla" : {
          "class" : "Dist::Zilla::Dist::Builder",
          "config" : {
-            "is_trial" : "0"
+            "is_trial" : "1"
          },
          "version" : "4.300034"
       }

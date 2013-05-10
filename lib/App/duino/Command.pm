@@ -1,6 +1,6 @@
 package App::duino::Command;
 {
-  $App::duino::Command::VERSION = '0.08';
+  $App::duino::Command::VERSION = '0.09'; # TRIAL
 }
 
 use strict;
@@ -17,7 +17,7 @@ App::duino::Command - Base class for App::duino commands
 
 =head1 VERSION
 
-version 0.08
+version 0.09
 
 =cut
 
@@ -35,14 +35,17 @@ sub ini {
 sub default_config {
 	my ($self, $config) = @_;
 
-	return $ENV{'ARDUINO_ROOT'}   || '/usr/share/arduino'
-		if $config eq 'root';
-
 	return $self -> ini($config) || $ENV{'ARDUINO_BOARD'} || 'uno'
 		if $config eq 'board';
 
-	return $self -> ini($config) || $ENV{'ARDUINO_HARDWARE'} || 'arduino'
-		if $config eq 'hardware';
+	return $ENV{'ARDUINO_PORT'}  || '/dev/ttyACM0'
+		if $config eq 'port';
+
+	return $ENV{'ARDUINO_FUSES'}  || 0
+		if $config eq 'fuses';
+
+	return $ENV{'ARDUINO_UPLOADER'}  || undef
+		if $config eq 'uploader';
 
 	return $self -> ini($config) || $ENV{'ARDUINO_LIBS'}  || ''
 		if $config eq 'libs';
@@ -50,8 +53,11 @@ sub default_config {
 	return $ENV{'ARDUINO_SKETCHBOOK'} || "$ENV{'HOME'}/sketchbook"
 		if $config eq 'sketchbook';
 
-	return $ENV{'ARDUINO_PORT'}  || '/dev/ttyACM0'
-		if $config eq 'port';
+	return $ENV{'ARDUINO_ROOT'}   || '/usr/share/arduino'
+		if $config eq 'root';
+
+	return $self -> ini($config) || $ENV{'ARDUINO_HARDWARE'} || 'arduino'
+		if $config eq 'hardware';
 }
 
 sub board_config {
@@ -79,9 +85,6 @@ sub board_config {
 	}
 
 	close $fh;
-
-	warn "Can't find '$board.$config' config value.\n"
-		if not $value;
 
 	return $value;
 }

@@ -1,6 +1,6 @@
 package App::duino::Command::com;
 {
-  $App::duino::Command::com::VERSION = '0.08';
+  $App::duino::Command::com::VERSION = '0.09'; # TRIAL
 }
 
 use strict;
@@ -16,11 +16,19 @@ App::duino::Command::com - Open a serial monitor to an Arduino
 
 =head1 VERSION
 
-version 0.08
+version 0.09
 
 =head1 SYNOPSIS
 
   $ duino com --port /dev/ttyACM0
+
+=head1 DESCRIPTION
+
+This command can be used to initiate a serial monitor with an Arduino board (or
+any other device that supports serial communication).
+
+Note that only RX communication is currently possible (i.e. it's only possible
+to receive data, and not send any).
 
 =cut
 
@@ -51,6 +59,18 @@ sub execute {
 
 	close $fh;
 }
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--port>, B<-p>
+
+The path to the Arduino serial port. The environment variable C<ARDUINO_PORT>
+will be used if present and if the command-line option is not set. If neither
+of them is set the default value (C</dev/ttyACM0>) will be used.
+
+=back
 
 =head1 AUTHOR
 
