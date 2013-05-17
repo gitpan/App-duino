@@ -1,6 +1,6 @@
 package App::duino::Command::upload;
 {
-  $App::duino::Command::upload::VERSION = '0.09'; # TRIAL
+  $App::duino::Command::upload::VERSION = '0.10';
 }
 
 use strict;
@@ -18,7 +18,7 @@ App::duino::Command::upload - Upload a sketch to an Arduino
 
 =head1 VERSION
 
-version 0.09
+version 0.10
 
 =head1 SYNOPSIS
 

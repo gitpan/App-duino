@@ -11,7 +11,7 @@ duino - Command-line toolkit for working with Arduino boards
 
 =head1 VERSION
 
-version 0.09
+version 0.10
 
 =cut
 

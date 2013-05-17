@@ -1,6 +1,6 @@
 package App::duino::Command::models;
 {
-  $App::duino::Command::models::VERSION = '0.09'; # TRIAL
+  $App::duino::Command::models::VERSION = '0.10';
 }
 
 use strict;
@@ -14,7 +14,7 @@ App::duino::Command::models - List all known Arduino models
 
 =head1 VERSION
 
-version 0.09
+version 0.10
 
 =head1 SYNOPSIS
 
